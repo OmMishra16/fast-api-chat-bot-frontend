@@ -9,7 +9,6 @@ import {
   Container,
   useToast,
   Fade,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { TypingIndicator } from './TypingIndicator';
