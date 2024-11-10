@@ -70,9 +70,7 @@ export default function Chat() {
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
 
     try {
-      const baseUrl = import.meta.env.DEV 
-        ? '' 
-        : import.meta.env.VITE_API_URL.replace('http://', 'https://');
+      const baseUrl = import.meta.env.DEV ? '' : import.meta.env.VITE_API_URL;
       
       const response = await axios.post(`${baseUrl}/api/chat/send`, {
         message: userMessage,
