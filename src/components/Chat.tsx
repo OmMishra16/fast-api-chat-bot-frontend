@@ -36,10 +36,10 @@ export default function Chat() {
   }, [messages]);
 
   const simulateTyping = async (response: string) => {
-    // Show typing indicator first
+   
     setMessages(prev => [...prev, { role: 'assistant', content: '', isTyping: true }]);
     
-    // Wait a bit before starting to type
+ 
     await new Promise(resolve => setTimeout(resolve, 500));
     
     let currentText = '';
@@ -51,11 +51,10 @@ export default function Chat() {
         ...prev.slice(0, -1),
         { role: 'assistant', content: currentText, isTyping: true }
       ]);
-      // Random delay between characters
+    
       await new Promise(resolve => setTimeout(resolve, 15 + Math.random() * 25));
     }
     
-    // Final message without typing indicator
     setMessages(prev => [
       ...prev.slice(0, -1),
       { role: 'assistant', content: response, isTyping: false }
