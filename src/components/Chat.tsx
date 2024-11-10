@@ -71,12 +71,9 @@ export default function Chat() {
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
 
     try {
-      const baseUrl =  'http://13.232.251.152';
-      
-      const url = `${baseUrl}/api/chat/send${conversationId ? `?conversation_id=${conversationId}` : ''}`;
-      
-      const response = await axios.post(url, {
-        message: userMessage
+      const response = await axios.post('/api/chat/send', {
+        message: userMessage,
+        conversation_id: conversationId
       });
 
       setConversationId(response.data.conversation_id);
