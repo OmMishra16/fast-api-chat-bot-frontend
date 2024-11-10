@@ -71,9 +71,7 @@ export default function Chat() {
     setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
 
     try {
-      const baseUrl = import.meta.env.PROD 
-        ? 'http://13.232.251.152'  
-        : '';
+      const baseUrl =  'http://13.232.251.152';
       
       const url = `${baseUrl}/api/chat/send${conversationId ? `?conversation_id=${conversationId}` : ''}`;
       
