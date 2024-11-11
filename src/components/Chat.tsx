@@ -9,23 +9,29 @@ import {
   Container,
   useToast,
   Fade,
+  useColorMode,
 } from '@chakra-ui/react';
 import axios from 'axios';
 import { TypingIndicator } from './TypingIndicator';
+import { ColorModeToggle } from './ColorModeToggle';
+import { useInitialMessages } from '../hooks/useInitialMessages';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   isTyping?: boolean;
+  timestamp?: Date;
 }
 
 export default function Chat() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const initialMessages = useInitialMessages();
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState('');
   const [conversationId, setConversationId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const toast = useToast();
+  const { colorMode } = useColorMode();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -74,14 +80,20 @@ export default function Chat() {
         ? '' 
         : import.meta.env.VITE_API_URL;
       
-      const response = await axios.post(`${baseUrl}/api/chat/send`, {
-        message: userMessage,
-        conversation_id: conversationId
+      const url = `${baseUrl}/api/chat/send${conversationId ? `?conversation_id=${conversationId}` : ''}`;
+      
+      const response = await axios.post(url, {
+        message: userMessage
       });
 
-      setConversationId(response.data.conversation_id);
+      if (!conversationId && response.data.conversation_id) {
+        console.log('Setting new conversation ID:', response.data.conversation_id);
+        setConversationId(response.data.conversation_id);
+      }
+
       await simulateTyping(response.data.bot_response);
     } catch (error) {
+      console.error('Chat error:', error);
       toast({
         title: 'Error',
         description: 'Failed to send message',
@@ -94,12 +106,19 @@ export default function Chat() {
     }
   };
 
+  const startNewConversation = () => {
+    setConversationId(null);
+    setMessages(initialMessages);
+  };
+
   return (
     <Box 
       h="100vh" 
       w="100vw"
-      bg="#0F1117"
-      bgGradient="radial-circle at center, #1A1F2E 0%, #0F1117 100%)"
+      bg={colorMode === 'dark' ? '#0F1117' : '#F7FAFC'}
+      bgGradient={colorMode === 'dark' 
+        ? "radial-circle at center, #1A1F2E 0%, #0F1117 100%)"
+        : "radial-circle at center, #EDF2F7 0%, #F7FAFC 100%)"}
       display="flex"
       alignItems="center"
       justifyContent="center"
@@ -109,12 +128,12 @@ export default function Chat() {
           w="full"
           h={{ base: '100vh', md: '85vh' }}
           maxH="900px"
-          bg="whiteAlpha.50"
+          bg={colorMode === 'dark' ? 'whiteAlpha.50' : 'white'}
           borderRadius={{ base: 'none', md: '3xl' }}
           overflow="hidden"
           backdropFilter="blur(100px)"
           border="1px solid"
-          borderColor="whiteAlpha.100"
+          borderColor={colorMode === 'dark' ? 'whiteAlpha.100' : 'gray.200'}
           display="flex"
           flexDirection="column"
           boxShadow="2xl"
@@ -124,18 +143,31 @@ export default function Chat() {
           <Box 
             p={4} 
             borderBottomWidth="1px" 
-            borderColor="whiteAlpha.100"
-            bg="whiteAlpha.50"
+            borderColor={colorMode === 'dark' ? 'whiteAlpha.100' : 'gray.200'}
+            bg={colorMode === 'dark' ? 'whiteAlpha.50' : 'white'}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
           >
+            <ColorModeToggle />
             <Text 
               fontSize="xl" 
               fontFamily="Playfair Display, serif"
               fontWeight="500"
               letterSpacing="wide"
-              textAlign="center"
             >
               Fast API TestBot
             </Text>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={startNewConversation}
+              _hover={{
+                bg: colorMode === 'dark' ? 'whiteAlpha.200' : 'gray.100'
+              }}
+            >
+              New Chat
+            </Button>
           </Box>
 
           {/* Messages Area */}
@@ -159,14 +191,20 @@ export default function Chat() {
                   >
                     <Box
                       maxW={{ base: '80%', md: '60%' }}
-                      bg={message.role === 'user' ? 'blue.500' : 'whiteAlpha.100'}
-                      color={message.role === 'user' ? 'white' : 'whiteAlpha.900'}
+                      bg={message.role === 'user' 
+                        ? 'blue.500' 
+                        : colorMode === 'dark' ? 'whiteAlpha.100' : 'gray.100'}
+                      color={message.role === 'user' 
+                        ? 'white' 
+                        : colorMode === 'dark' ? 'whiteAlpha.900' : 'gray.800'}
                       p={4}
                       borderRadius="2xl"
                       boxShadow="lg"
                       backdropFilter="blur(10px)"
                       border="1px solid"
-                      borderColor={message.role === 'user' ? 'blue.600' : 'whiteAlpha.200'}
+                      borderColor={message.role === 'user' 
+                        ? 'blue.600' 
+                        : colorMode === 'dark' ? 'whiteAlpha.200' : 'gray.200'}
                       _hover={{
                         transform: 'translateY(-1px)',
                         boxShadow: 'xl',
@@ -193,8 +231,8 @@ export default function Chat() {
           <Box 
             p={4} 
             borderTopWidth="1px"
-            borderColor="whiteAlpha.100"
-            bg="whiteAlpha.50"
+            borderColor={colorMode === 'dark' ? 'whiteAlpha.100' : 'gray.200'}
+            bg={colorMode === 'dark' ? 'whiteAlpha.50' : 'gray.50'}
           >
             <HStack spacing={3}>
               <Input
@@ -202,15 +240,19 @@ export default function Chat() {
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Type your message..."
                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                bg="whiteAlpha.100"
+                bg={colorMode === 'dark' ? 'whiteAlpha.100' : 'white'}
                 border="1px solid"
-                borderColor="whiteAlpha.200"
-                _hover={{ borderColor: 'whiteAlpha.300' }}
+                borderColor={colorMode === 'dark' ? 'whiteAlpha.200' : 'gray.200'}
+                _hover={{ 
+                  borderColor: colorMode === 'dark' ? 'whiteAlpha.300' : 'gray.300' 
+                }}
                 _focus={{ 
                   borderColor: 'blue.400',
                   boxShadow: '0 0 0 1px var(--chakra-colors-blue-400)'
                 }}
-                _placeholder={{ color: 'whiteAlpha.400' }}
+                _placeholder={{ 
+                  color: colorMode === 'dark' ? 'whiteAlpha.400' : 'gray.400' 
+                }}
               />
               <Button
                 colorScheme="blue"
@@ -228,6 +270,18 @@ export default function Chat() {
               </Button>
             </HStack>
           </Box>
+
+          {conversationId && (
+            <Text
+              position="absolute"
+              top={2}
+              right={2}
+              fontSize="xs"
+              color={colorMode === 'dark' ? 'whiteAlpha.400' : 'gray.400'}
+            >
+              Conversation #{conversationId}
+            </Text>
+          )}
         </Box>
       </Container>
     </Box>

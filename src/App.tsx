@@ -4,19 +4,19 @@ import Chat from './components/Chat';
 const theme = extendTheme({
   config: {
     initialColorMode: 'dark',
-    useSystemColorMode: false,
+    useSystemColorMode: true,
   },
   fonts: {
     heading: '"Playfair Display", serif',
     body: '"Inter", sans-serif',
   },
   styles: {
-    global: {
+    global: (props: { colorMode: string }) => ({
       body: {
-        bg: '#0F1117',
-        color: 'whiteAlpha.900',
+        bg: props.colorMode === 'dark' ? '#0F1117' : '#F7FAFC',
+        color: props.colorMode === 'dark' ? 'whiteAlpha.900' : 'gray.800',
       },
-    },
+    }),
   },
   components: {
     Container: {
