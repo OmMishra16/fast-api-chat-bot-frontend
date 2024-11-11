@@ -72,7 +72,7 @@ export default function Chat() {
     try {
       const baseUrl = import.meta.env.DEV 
         ? '' 
-        : import.meta.env.VITE_API_URL.replace('https://', 'http://');
+        : import.meta.env.VITE_API_URL;
       
       const response = await axios.post(`${baseUrl}/api/chat/send`, {
         message: userMessage,

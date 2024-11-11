@@ -6,7 +6,7 @@ export default defineConfig(({ mode }) => ({
   server: {
     proxy: mode === 'development' ? {
       '/api': {
-        target: 'http://13.232.251.152',
+        target: 'https://13.232.251.152',
         changeOrigin: true,
         secure: false,
       },
