@@ -6,9 +6,9 @@ export default defineConfig(({ mode }) => ({
   server: {
     proxy: mode === 'development' ? {
       '/api': {
-        target: 'https://13.232.251.152',
+        target: 'https://api.chat.buildmynotes.com',
         changeOrigin: true,
-        secure: false,
+        secure: true,
       },
     } : undefined,
   },
